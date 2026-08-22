@@ -4,7 +4,10 @@
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>NutriCalc</title>
-		<meta name="description" />
+		<meta
+			name="description"
+			content="150 receptov s presnými makrami na porciu."
+		/>
 		<link rel="icon" type="image/svg+xml" href="icon.svg" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -29,6 +32,7 @@
 					/>
 					<span class="brand__name">NutriCalc</span>
 				</a>
+
 				<div class="account" id="account-area">
 					<button
 						id="account-signed-out-btn"
@@ -52,6 +56,7 @@
 							<button id="open-settings-btn" type="button">
 								Moje nastavenia
 							</button>
+							<button id="open-account-btn" type="button">Účet</button>
 							<button id="logout-btn" type="button">Odhlásiť sa</button>
 						</div>
 					</div>
@@ -199,6 +204,34 @@
 					</label>
 				</div>
 
+				<div id="auth-recovery-fields" hidden>
+					<label class="field">
+						<span>Bezpečnostná otázka (nepovinné)</span>
+						<input
+							id="auth-recovery-question"
+							type="text"
+							placeholder="napr. Meno mojej prvej mačky?"
+							maxlength="120"
+						/>
+					</label>
+					<label class="field">
+						<span>Odpoveď</span>
+						<input
+							id="auth-recovery-answer"
+							type="text"
+							placeholder="odpoveď"
+							maxlength="120"
+						/>
+					</label>
+					<p class="field-hint">
+						Bez tohto sa heslo dá obnoviť len ručne, cez správcu stránky.
+					</p>
+				</div>
+
+				<button type="button" id="forgot-password-link" class="link-btn">
+					Zabudol/a si heslo?
+				</button>
+
 				<div class="dialog__actions">
 					<button type="button" id="auth-cancel-btn" class="btn btn--ghost">
 						Zrušiť
@@ -206,6 +239,62 @@
 					<button type="submit" id="auth-submit-btn" class="btn btn--gold">
 						Prihlásiť sa
 					</button>
+				</div>
+			</form>
+		</dialog>
+
+		<!-- FORGOT PASSWORD DIALOG -->
+		<dialog id="forgot-dialog" class="dialog">
+			<form method="dialog" class="dialog__form">
+				<h2 class="dialog__title">Obnovenie hesla</h2>
+				<p id="forgot-error" class="dialog__error" role="alert" hidden></p>
+
+				<div id="forgot-step-username">
+					<label class="field">
+						<span>Používateľské meno</span>
+						<input
+							id="forgot-username"
+							type="text"
+							autocomplete="username"
+							required
+							minlength="3"
+							maxlength="24"
+						/>
+					</label>
+					<div class="dialog__actions">
+						<button type="button" id="forgot-cancel-btn" class="btn btn--ghost">
+							Zrušiť
+						</button>
+						<button type="button" id="forgot-next-btn" class="btn btn--gold">
+							Ďalej
+						</button>
+					</div>
+				</div>
+
+				<div id="forgot-step-answer" hidden>
+					<p id="forgot-question" class="dialog__question"></p>
+					<label class="field">
+						<span>Odpoveď</span>
+						<input id="forgot-answer" type="text" required />
+					</label>
+					<label class="field">
+						<span>Nové heslo</span>
+						<input
+							id="forgot-new-password"
+							type="password"
+							required
+							minlength="6"
+							autocomplete="new-password"
+						/>
+					</label>
+					<div class="dialog__actions">
+						<button type="button" id="forgot-back-btn" class="btn btn--ghost">
+							Späť
+						</button>
+						<button type="submit" id="forgot-reset-btn" class="btn btn--gold">
+							Obnoviť heslo
+						</button>
+					</div>
 				</div>
 			</form>
 		</dialog>
@@ -263,6 +352,59 @@
 					</button>
 					<button type="submit" id="settings-save-btn" class="btn btn--gold">
 						Uložiť
+					</button>
+				</div>
+			</form>
+		</dialog>
+
+		<!-- ACCOUNT DIALOG -->
+		<dialog id="account-dialog" class="dialog">
+			<form method="dialog" class="dialog__form">
+				<h2 class="dialog__title">Účet</h2>
+				<p id="account-error" class="dialog__error" role="alert" hidden></p>
+				<p
+					id="account-success"
+					class="dialog__success"
+					role="status"
+					hidden
+				></p>
+
+				<label class="field">
+					<span>Aktuálne heslo</span>
+					<input
+						id="account-current-password"
+						type="password"
+						autocomplete="current-password"
+						required
+						minlength="6"
+					/>
+				</label>
+				<label class="field">
+					<span>Nové používateľské meno (nepovinné)</span>
+					<input
+						id="account-new-username"
+						type="text"
+						autocomplete="username"
+						minlength="3"
+						maxlength="24"
+					/>
+				</label>
+				<label class="field">
+					<span>Nové heslo (nepovinné)</span>
+					<input
+						id="account-new-password"
+						type="password"
+						autocomplete="new-password"
+						minlength="6"
+					/>
+				</label>
+
+				<div class="dialog__actions">
+					<button type="button" id="account-cancel-btn" class="btn btn--ghost">
+						Zrušiť
+					</button>
+					<button type="submit" id="account-save-btn" class="btn btn--gold">
+						Uložiť zmeny
 					</button>
 				</div>
 			</form>

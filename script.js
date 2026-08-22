@@ -79,6 +79,34 @@
 		targetCarbs: document.getElementById('target-carbs'),
 		targetFat: document.getElementById('target-fat'),
 		settingsCancelBtn: document.getElementById('settings-cancel-btn'),
+
+		authRecoveryFields: document.getElementById('auth-recovery-fields'),
+		authRecoveryQuestion: document.getElementById('auth-recovery-question'),
+		authRecoveryAnswer: document.getElementById('auth-recovery-answer'),
+		forgotPasswordLink: document.getElementById('forgot-password-link'),
+
+		forgotDialog: document.getElementById('forgot-dialog'),
+		forgotForm: document.querySelector('#forgot-dialog .dialog__form'),
+		forgotError: document.getElementById('forgot-error'),
+		forgotStepUsername: document.getElementById('forgot-step-username'),
+		forgotStepAnswer: document.getElementById('forgot-step-answer'),
+		forgotUsername: document.getElementById('forgot-username'),
+		forgotNextBtn: document.getElementById('forgot-next-btn'),
+		forgotCancelBtn: document.getElementById('forgot-cancel-btn'),
+		forgotQuestion: document.getElementById('forgot-question'),
+		forgotAnswer: document.getElementById('forgot-answer'),
+		forgotNewPassword: document.getElementById('forgot-new-password'),
+		forgotBackBtn: document.getElementById('forgot-back-btn'),
+
+		openAccountBtn: document.getElementById('open-account-btn'),
+		accountDialog: document.getElementById('account-dialog'),
+		accountForm: document.querySelector('#account-dialog .dialog__form'),
+		accountError: document.getElementById('account-error'),
+		accountSuccess: document.getElementById('account-success'),
+		accountCurrentPassword: document.getElementById('account-current-password'),
+		accountNewUsername: document.getElementById('account-new-username'),
+		accountNewPassword: document.getElementById('account-new-password'),
+		accountCancelBtn: document.getElementById('account-cancel-btn'),
 	};
 
 	/* ---------------------------------------------------------
@@ -200,6 +228,8 @@
 			mode === 'login' ? 'Prihlásiť sa' : 'Vytvoriť účet';
 		el.authPasscode.autocomplete =
 			mode === 'login' ? 'current-password' : 'new-password';
+		el.authRecoveryFields.hidden = mode !== 'signup';
+		el.forgotPasswordLink.hidden = mode !== 'login';
 		el.authError.hidden = true;
 	}
 
@@ -221,9 +251,14 @@
 
 		try {
 			const endpoint = authMode === 'login' ? '/login' : '/signup';
+			const payload = { username, passcode };
+			if (authMode === 'signup') {
+				payload.recoveryQuestion = el.authRecoveryQuestion.value.trim();
+				payload.recoveryAnswer = el.authRecoveryAnswer.value.trim();
+			}
 			const data = await apiFetchNoAuth(endpoint, {
 				method: 'POST',
-				body: JSON.stringify({ username, passcode }),
+				body: JSON.stringify(payload),
 			});
 			session = {
 				token: data.token,
@@ -312,6 +347,131 @@
 		} catch (err) {
 			el.settingsError.textContent = err.message;
 			el.settingsError.hidden = false;
+		}
+	});
+
+	/* ---------------------------------------------------------
+	   Forgot password
+	--------------------------------------------------------- */
+	function resetForgotDialog() {
+		el.forgotError.hidden = true;
+		el.forgotStepUsername.hidden = false;
+		el.forgotStepAnswer.hidden = true;
+		el.forgotUsername.value = '';
+		el.forgotAnswer.value = '';
+		el.forgotNewPassword.value = '';
+		el.forgotQuestion.textContent = '';
+	}
+
+	el.forgotPasswordLink.addEventListener('click', () => {
+		el.authDialog.close();
+		resetForgotDialog();
+		el.forgotDialog.showModal();
+	});
+
+	el.forgotCancelBtn.addEventListener('click', () => el.forgotDialog.close());
+	el.forgotBackBtn.addEventListener('click', () => {
+		el.forgotStepAnswer.hidden = true;
+		el.forgotStepUsername.hidden = false;
+		el.forgotError.hidden = true;
+	});
+
+	el.forgotNextBtn.addEventListener('click', async () => {
+		el.forgotError.hidden = true;
+		const username = el.forgotUsername.value.trim();
+		if (!username) return;
+
+		try {
+			const data = await apiFetchNoAuth(
+				`/forgot-password?username=${encodeURIComponent(username)}`,
+				{
+					method: 'GET',
+				},
+			);
+			el.forgotQuestion.textContent = data.question;
+			el.forgotStepUsername.hidden = true;
+			el.forgotStepAnswer.hidden = false;
+		} catch (err) {
+			el.forgotError.textContent = err.message;
+			el.forgotError.hidden = false;
+		}
+	});
+
+	el.forgotForm.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		if (el.forgotStepAnswer.hidden) return; // Enter pressed on step 1 — ignore, use "Ďalej" instead
+		el.forgotError.hidden = true;
+
+		try {
+			const data = await apiFetchNoAuth('/forgot-password', {
+				method: 'POST',
+				body: JSON.stringify({
+					username: el.forgotUsername.value.trim(),
+					answer: el.forgotAnswer.value,
+					newPassword: el.forgotNewPassword.value,
+				}),
+			});
+			session = {
+				token: data.token,
+				username: data.username,
+				settings: data.settings,
+			};
+			saveSession();
+			renderAccountUI();
+			buildChips();
+			render();
+			el.forgotDialog.close();
+		} catch (err) {
+			el.forgotError.textContent = err.message;
+			el.forgotError.hidden = false;
+		}
+	});
+
+	/* ---------------------------------------------------------
+	   Account (change username / password)
+	--------------------------------------------------------- */
+	el.openAccountBtn.addEventListener('click', () => {
+		el.accountMenu.hidden = true;
+		el.accountError.hidden = true;
+		el.accountSuccess.hidden = true;
+		el.accountForm.reset();
+		el.accountDialog.showModal();
+	});
+
+	el.accountCancelBtn.addEventListener('click', () => el.accountDialog.close());
+
+	el.accountForm.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		el.accountError.hidden = true;
+		el.accountSuccess.hidden = true;
+
+		const currentPassword = el.accountCurrentPassword.value;
+		const newUsername = el.accountNewUsername.value.trim();
+		const newPassword = el.accountNewPassword.value;
+
+		try {
+			const data = await apiFetch('/account', {
+				method: 'PUT',
+				body: JSON.stringify({
+					currentPassword,
+					newUsername: newUsername || null,
+					newPassword: newPassword || null,
+				}),
+			});
+			session = {
+				token: data.token,
+				username: data.username,
+				settings: data.settings,
+			};
+			saveSession();
+			renderAccountUI();
+			el.accountSuccess.textContent = 'Zmeny uložené.';
+			el.accountSuccess.hidden = false;
+			el.accountForm.reset();
+			setTimeout(() => el.accountDialog.close(), 1000);
+		} catch (err) {
+			el.accountError.textContent = err.message;
+			el.accountError.hidden = false;
 		}
 	});
 

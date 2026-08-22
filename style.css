@@ -675,8 +675,13 @@ main {
 	border-radius: var(--radius);
 	background: var(--surface);
 	padding: 14px 16px 16px;
-	position: sticky;
-	top: 110px;
+}
+
+@media (min-width: 761px) {
+	.facts {
+		position: sticky;
+		top: 110px;
+	}
 }
 
 .facts__eyebrow {
@@ -861,6 +866,9 @@ main {
 	color: var(--text);
 	padding: 26px;
 	width: min(90vw, 400px);
+	max-height: min(85vh, 720px);
+	overflow-y: auto;
+	overflow-x: hidden;
 	box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.7);
 }
 
@@ -912,6 +920,57 @@ main {
 	margin: 0 0 14px;
 }
 
+.dialog__success {
+	background: rgba(90, 160, 90, 0.12);
+	border: 1px solid rgba(90, 160, 90, 0.4);
+	color: #9ed69e;
+	font-size: 0.82rem;
+	padding: 9px 12px;
+	border-radius: var(--radius);
+	margin: 0 0 14px;
+}
+
+.dialog__question {
+	font-size: 0.9rem;
+	color: var(--gold-bright);
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	padding: 10px 12px;
+	margin: 0 0 14px;
+}
+
+.field-hint {
+	font-size: 0.72rem;
+	color: var(--text-faint);
+	margin: -8px 0 14px;
+	line-height: 1.4;
+}
+
+.link-btn {
+	appearance: none;
+	background: transparent;
+	border: none;
+	color: var(--text-faint);
+	font-family: var(--font-body);
+	font-size: 0.8rem;
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	cursor: pointer;
+	padding: 0;
+	margin: 0 0 18px;
+	display: inline-block;
+}
+
+.link-btn:hover {
+	color: var(--gold-bright);
+}
+
+.link-btn:focus-visible {
+	outline: 2px solid var(--gold);
+	outline-offset: 2px;
+}
+
 .field {
 	display: flex;
 	flex-direction: column;
@@ -929,6 +988,8 @@ main {
 	padding: 10px 12px;
 	font-family: var(--font-body);
 	font-size: 0.92rem;
+	width: 100%;
+	min-width: 0;
 }
 
 .field input:focus-visible {
@@ -940,6 +1001,7 @@ main {
 	border: none;
 	padding: 0;
 	margin: 4px 0 18px;
+	min-width: 0;
 }
 
 .field-group legend {
@@ -952,6 +1014,7 @@ main {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 10px;
+	min-width: 0;
 }
 
 .field--compact {
