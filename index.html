@@ -49,10 +49,31 @@
 							type="button"
 							aria-haspopup="true"
 							aria-expanded="false"
+							aria-label="Účet"
 						>
-							<span id="account-username"></span>
+							<svg
+								viewBox="0 0 24 24"
+								fill="none"
+								aria-hidden="true"
+								class="account__avatar-icon"
+							>
+								<circle
+									cx="12"
+									cy="8.5"
+									r="3.5"
+									stroke="currentColor"
+									stroke-width="1.6"
+								/>
+								<path
+									d="M4.5 20c1.2-3.8 4.3-6 7.5-6s6.3 2.2 7.5 6"
+									stroke="currentColor"
+									stroke-width="1.6"
+									stroke-linecap="round"
+								/>
+							</svg>
 						</button>
 						<div id="account-menu" class="account__menu" hidden>
+							<p id="account-username" class="account__menu-name"></p>
 							<button id="open-settings-btn" type="button">
 								Moje nastavenia
 							</button>

@@ -160,6 +160,19 @@ a {
 .account__btn--user {
 	color: var(--gold-bright);
 	border-color: var(--border);
+	width: 36px;
+	height: 36px;
+	padding: 0;
+	border-radius: 50%;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+.account__avatar-icon {
+	width: 19px;
+	height: 19px;
 }
 
 .account__signed-in {
@@ -174,9 +187,22 @@ a {
 	border: 1px solid var(--border);
 	border-radius: var(--radius-lg);
 	box-shadow: var(--shadow-card);
-	min-width: 170px;
+	min-width: 200px;
+	max-width: min(280px, calc(100vw - 32px));
 	overflow: hidden;
 	z-index: 20;
+}
+
+.account__menu-name {
+	margin: 0;
+	padding: 12px 14px;
+	font-family: var(--font-body);
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--gold-bright);
+	border-bottom: 1px solid var(--border-soft);
+	overflow-wrap: break-word;
+	word-break: break-word;
 }
 
 .account__menu button {
