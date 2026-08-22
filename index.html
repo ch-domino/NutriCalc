@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="sk">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>NutriCalc — Recepty</title>
+		<meta
+			name="description"
+			content="150 receptov s presnými makrami na porciu."
+		/>
+		<link rel="icon" type="image/svg+xml" href="icon.svg" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,900&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600;700&display=swap"
+			rel="stylesheet"
+		/>
+		<link rel="stylesheet" href="style.css" />
+	</head>
+	<body>
+		<div class="grain" aria-hidden="true"></div>
+
+		<header class="site-head">
+			<div class="site-head__inner">
+				<a class="brand" href="#/" aria-label="NutriCalc — domov">
+					<img
+						class="brand__icon"
+						src="icon.svg"
+						alt=""
+						width="28"
+						height="28"
+					/>
+					<span class="brand__name">NutriCalc</span>
+				</a>
+			</div>
+		</header>
+
+		<main id="main">
+			<!-- LIST VIEW -->
+			<section id="view-list" class="view">
+				<div class="toolbar">
+					<label class="search" for="search-input">
+						<svg
+							class="search__icon"
+							viewBox="0 0 20 20"
+							fill="none"
+							aria-hidden="true"
+						>
+							<circle
+								cx="8.5"
+								cy="8.5"
+								r="6"
+								stroke="currentColor"
+								stroke-width="1.6"
+							/>
+							<path
+								d="M17 17l-4-4"
+								stroke="currentColor"
+								stroke-width="1.6"
+								stroke-linecap="round"
+							/>
+						</svg>
+						<input
+							id="search-input"
+							type="search"
+							placeholder="Hľadať recept alebo surovinu…"
+							autocomplete="off"
+						/>
+					</label>
+
+					<div class="sort">
+						<label for="sort-select">Zoradiť</label>
+						<select id="sort-select">
+							<option value="default">Podľa poradia</option>
+							<option value="kcal-asc">Kalórie: od najnižších</option>
+							<option value="kcal-desc">Kalórie: od najvyšších</option>
+							<option value="time-asc">Čas prípravy: najkratší</option>
+							<option value="protein-desc">Bielkoviny: najviac</option>
+							<option value="title-asc">Názov: A–Z</option>
+						</select>
+					</div>
+				</div>
+
+				<div
+					id="chip-row"
+					class="chip-row"
+					role="group"
+					aria-label="Filter podľa typu jedla"
+				></div>
+
+				<p id="result-count" class="result-count" aria-live="polite"></p>
+
+				<div id="card-grid" class="card-grid"></div>
+
+				<p id="empty-state" class="empty-state" hidden>
+					Žiadny recept nezodpovedá hľadaniu. Skús iné slovo alebo zruš filtre.
+				</p>
+			</section>
+
+			<!-- DETAIL VIEW -->
+			<section id="view-detail" class="view" hidden>
+				<button id="back-btn" class="back-btn" type="button">
+					<svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+						<path
+							d="M12 4l-6 6 6 6"
+							stroke="currentColor"
+							stroke-width="1.8"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+					</svg>
+					Späť na recepty
+				</button>
+
+				<article id="detail-content"></article>
+			</section>
+		</main>
+
+		<footer class="site-foot">
+			<p>
+				NutriCalc · dáta o výžive sú orientačné, prepočítané na jednu porciu.
+			</p>
+		</footer>
+
+		<script src="script.js"></script>
+	</body>
+</html>
