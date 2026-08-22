@@ -98,7 +98,8 @@ a {
 	margin: 0 auto;
 	padding: 22px 24px 18px;
 	display: flex;
-	align-items: baseline;
+	align-items: center;
+	justify-content: space-between;
 	gap: 14px;
 	flex-wrap: wrap;
 }
@@ -995,6 +996,17 @@ main {
 .field input:focus-visible {
 	outline: 2px solid var(--gold);
 	outline-offset: 1px;
+}
+
+/* iOS Safari auto-zooms on focus for any text input under 16px —
+   bump to 16px on small screens only, so the dialogs/search/sort
+   don't trigger that zoom, without changing the desktop sizing. */
+@media (max-width: 600px) {
+	.field input,
+	.search input,
+	.sort select {
+		font-size: 16px;
+	}
 }
 
 .field-group {
