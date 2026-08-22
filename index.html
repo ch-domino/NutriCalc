@@ -3,11 +3,8 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>NutriCalc — Recepty</title>
-		<meta
-			name="description"
-			content="150 receptov s presnými makrami na porciu."
-		/>
+		<title>NutriCalc</title>
+		<meta name="description" />
 		<link rel="icon" type="image/svg+xml" href="icon.svg" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -32,6 +29,33 @@
 					/>
 					<span class="brand__name">NutriCalc</span>
 				</a>
+				<div class="account" id="account-area">
+					<button
+						id="account-signed-out-btn"
+						class="account__btn"
+						type="button"
+						hidden
+					>
+						Prihlásiť sa
+					</button>
+					<div id="account-signed-in" class="account__signed-in" hidden>
+						<button
+							id="account-menu-btn"
+							class="account__btn account__btn--user"
+							type="button"
+							aria-haspopup="true"
+							aria-expanded="false"
+						>
+							<span id="account-username"></span>
+						</button>
+						<div id="account-menu" class="account__menu" hidden>
+							<button id="open-settings-btn" type="button">
+								Moje nastavenia
+							</button>
+							<button id="logout-btn" type="button">Odhlásiť sa</button>
+						</div>
+					</div>
+				</div>
 			</div>
 		</header>
 
@@ -88,6 +112,11 @@
 					aria-label="Filter podľa typu jedla"
 				></div>
 
+				<label id="hide-restricted-row" class="checkbox-row" hidden>
+					<input type="checkbox" id="hide-restricted" />
+					<span>Skryť recepty s mojimi alergénmi</span>
+				</label>
+
 				<p id="result-count" class="result-count" aria-live="polite"></p>
 
 				<div id="card-grid" class="card-grid"></div>
@@ -118,9 +147,127 @@
 
 		<footer class="site-foot">
 			<p>
-				NutriCalc · dáta o výžive sú orientačné, prepočítané na jednu porciu.
+				Nutrikalkulačka od Hany · dáta o výžive sú orientačné, prepočítané na
+				jednu porciu.
 			</p>
 		</footer>
+
+		<!-- AUTH DIALOG -->
+		<dialog id="auth-dialog" class="dialog">
+			<form method="dialog" class="dialog__form">
+				<div class="dialog__tabs" role="tablist">
+					<button
+						type="button"
+						class="dialog__tab"
+						id="tab-login"
+						aria-selected="true"
+					>
+						Prihlásenie
+					</button>
+					<button
+						type="button"
+						class="dialog__tab"
+						id="tab-signup"
+						aria-selected="false"
+					>
+						Registrácia
+					</button>
+				</div>
+
+				<p id="auth-error" class="dialog__error" role="alert" hidden></p>
+
+				<div id="auth-fields">
+					<label class="field">
+						<span>Používateľské meno</span>
+						<input
+							id="auth-username"
+							type="text"
+							autocomplete="username"
+							required
+							minlength="3"
+							maxlength="24"
+						/>
+					</label>
+					<label class="field">
+						<span>Heslo</span>
+						<input
+							id="auth-passcode"
+							type="password"
+							autocomplete="current-password"
+							required
+							minlength="6"
+						/>
+					</label>
+				</div>
+
+				<div class="dialog__actions">
+					<button type="button" id="auth-cancel-btn" class="btn btn--ghost">
+						Zrušiť
+					</button>
+					<button type="submit" id="auth-submit-btn" class="btn btn--gold">
+						Prihlásiť sa
+					</button>
+				</div>
+			</form>
+		</dialog>
+
+		<!-- SETTINGS DIALOG -->
+		<dialog id="settings-dialog" class="dialog">
+			<form method="dialog" class="dialog__form">
+				<h2 class="dialog__title">Moje nastavenia</h2>
+				<p id="settings-error" class="dialog__error" role="alert" hidden></p>
+
+				<label class="field">
+					<span>Obmedzenia / alergény (oddeľ čiarkou)</span>
+					<input
+						id="settings-restrictions"
+						type="text"
+						placeholder="napr. laktóza, orechy, lepok"
+					/>
+				</label>
+
+				<fieldset class="field-group">
+					<legend>Denné ciele (voliteľné)</legend>
+					<div class="field-grid">
+						<label class="field field--compact">
+							<span>Kalórie</span>
+							<input
+								id="target-kcal"
+								type="number"
+								min="0"
+								placeholder="kcal"
+							/>
+						</label>
+						<label class="field field--compact">
+							<span>Bielkoviny</span>
+							<input
+								id="target-protein"
+								type="number"
+								min="0"
+								placeholder="g"
+							/>
+						</label>
+						<label class="field field--compact">
+							<span>Sacharidy</span>
+							<input id="target-carbs" type="number" min="0" placeholder="g" />
+						</label>
+						<label class="field field--compact">
+							<span>Tuky</span>
+							<input id="target-fat" type="number" min="0" placeholder="g" />
+						</label>
+					</div>
+				</fieldset>
+
+				<div class="dialog__actions">
+					<button type="button" id="settings-cancel-btn" class="btn btn--ghost">
+						Zrušiť
+					</button>
+					<button type="submit" id="settings-save-btn" class="btn btn--gold">
+						Uložiť
+					</button>
+				</div>
+			</form>
+		</dialog>
 
 		<script src="script.js"></script>
 	</body>
