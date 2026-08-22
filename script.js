@@ -387,10 +387,18 @@
 	async function loadRecipes() {
 		try {
 			const res = await fetch(`${API_BASE}/recipes`);
-			recipes = await res.json();
+			const data = await res.json().catch(() => null);
+			if (!res.ok) {
+				throw new Error(
+					(data && data.error) || `Server vrátil chybu ${res.status}.`,
+				);
+			}
+			if (!Array.isArray(data)) {
+				throw new Error('Server vrátil neočakávanú odpoveď.');
+			}
+			recipes = data;
 		} catch (err) {
-			el.grid.innerHTML =
-				'<p style="color:var(--text-faint);grid-column:1/-1;">Recepty sa nepodarilo načítať. Skontroluj, či je API nasadené a či je adresa v script.js správna.</p>';
+			el.grid.innerHTML = `<p style="color:var(--text-faint);grid-column:1/-1;">Recepty sa nepodarilo načítať: ${err.message}</p>`;
 			console.error(err);
 			return;
 		}
