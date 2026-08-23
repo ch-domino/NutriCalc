@@ -17,6 +17,7 @@
 	let searchTerm = '';
 	let sortMode = 'default';
 	let hideRestricted = false;
+	let withinTargetOnly = false;
 
 	let session = null; // { token, username, settings }
 
@@ -53,6 +54,8 @@
 		detailContent: document.getElementById('detail-content'),
 		hideRestrictedRow: document.getElementById('hide-restricted-row'),
 		hideRestrictedCheckbox: document.getElementById('hide-restricted'),
+		withinTargetRow: document.getElementById('within-target-row'),
+		withinTargetCheckbox: document.getElementById('within-target'),
 
 		accountSignedOutBtn: document.getElementById('account-signed-out-btn'),
 		accountSignedIn: document.getElementById('account-signed-in'),
@@ -219,7 +222,21 @@
 			session.settings.restrictions.length
 		);
 		el.hideRestrictedRow.hidden = !hasRestrictions;
-		if (!hasRestrictions) hideRestricted = false;
+		if (!hasRestrictions) {
+			hideRestricted = false;
+			el.hideRestrictedCheckbox.checked = false;
+		}
+
+		const targets = session && session.settings.targets;
+		const hasTargets = !!(
+			targets &&
+			(targets.kcal || targets.protein_g || targets.carbs_g || targets.fat_g)
+		);
+		el.withinTargetRow.hidden = !hasTargets;
+		if (!hasTargets) {
+			withinTargetOnly = false;
+			el.withinTargetCheckbox.checked = false;
+		}
 	}
 
 	let authMode = 'login';
@@ -599,6 +616,21 @@
 		return Math.round((kcal / target) * 100);
 	}
 
+	// A recipe "fits" if, for every daily target the user has actually set,
+	// one serving doesn't exceed it on its own. Targets left blank are
+	// skipped rather than treated as zero.
+	function fitsWithinTarget(recipe) {
+		const targets = session?.settings?.targets;
+		if (!targets) return true;
+		const n = recipe.nutrition_per_serving;
+
+		if (targets.kcal && n.kcal > targets.kcal) return false;
+		if (targets.protein_g && n.protein_g > targets.protein_g) return false;
+		if (targets.carbs_g && n.carbs_g > targets.carbs_g) return false;
+		if (targets.fat_g && n.fat_g > targets.fat_g) return false;
+		return true;
+	}
+
 	/* ---------------------------------------------------------
 	   Data loading
 	--------------------------------------------------------- */
@@ -699,6 +731,10 @@
 
 		if (hideRestricted) {
 			list = list.filter((r) => !matchedRestriction(r));
+		}
+
+		if (withinTargetOnly) {
+			list = list.filter(fitsWithinTarget);
 		}
 
 		const sorted = [...list];
@@ -980,6 +1016,11 @@
 
 	el.hideRestrictedCheckbox.addEventListener('change', (e) => {
 		hideRestricted = e.target.checked;
+		render();
+	});
+
+	el.withinTargetCheckbox.addEventListener('change', (e) => {
+		withinTargetOnly = e.target.checked;
 		render();
 	});
 
