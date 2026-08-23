@@ -86,6 +86,20 @@
 		</header>
 
 		<main id="main">
+			<!-- LOGIN GATE -->
+			<section id="view-gate" class="view gate" hidden>
+				<div class="gate__box">
+					<h2 class="gate__title">Recepty sú len pre prihlásených</h2>
+					<p class="gate__text">
+						Prihlás sa alebo si vytvor účet a získaj prístup ku všetkým
+						receptom.
+					</p>
+					<button type="button" id="gate-login-btn" class="btn btn--gold">
+						Prihlásiť sa / Registrovať
+					</button>
+				</div>
+			</section>
+
 			<!-- LIST VIEW -->
 			<section id="view-list" class="view">
 				<div class="toolbar">
@@ -426,6 +440,17 @@
 					</button>
 					<button type="submit" id="account-save-btn" class="btn btn--gold">
 						Uložiť zmeny
+					</button>
+				</div>
+
+				<div class="danger-zone">
+					<p class="danger-zone__label">Nebezpečná zóna</p>
+					<p class="danger-zone__hint">
+						Zmaže tvoj účet a všetky uložené nastavenia natrvalo. Nedá sa vrátiť
+						späť.
+					</p>
+					<button type="button" id="account-delete-btn" class="btn btn--danger">
+						Zmazať účet
 					</button>
 				</div>
 			</form>
