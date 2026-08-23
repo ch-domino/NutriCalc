@@ -7,7 +7,7 @@
 	   e.g. "https://nutrikalkulacka-api.your-subdomain.workers.dev"
 	   (or your custom domain if you attach one — no /api suffix)
 	--------------------------------------------------------- */
-	const API_BASE = 'https://YOUR-WORKER-NAME.YOUR-SUBDOMAIN.workers.dev';
+	const API_BASE = 'https://nutricalcdata.chrobakdomino.workers.dev';
 
 	/* ---------------------------------------------------------
 	   State
