@@ -33,52 +33,56 @@
 					<span class="brand__name">NutriCalc</span>
 				</a>
 
-				<div class="account" id="account-area">
-					<button
-						id="account-signed-out-btn"
-						class="account__btn"
-						type="button"
-						hidden
-					>
-						Prihlásiť sa
+				<div class="header-actions">
+					<button id="plan-btn" class="account__btn plan-btn" type="button" aria-label="Môj plán" hidden>
+						<svg viewBox="0 0 24 24" fill="none" aria-hidden="true" class="plan-btn__icon">
+							<path
+								d="M6 4h12a1 1 0 0 1 1 1v15l-3-2-3 2-3-2-3 2-3-2V5a1 1 0 0 1 1-1Z"
+								stroke="currentColor"
+								stroke-width="1.5"
+								stroke-linejoin="round"
+							/>
+							<path d="M8.5 9h7M8.5 12.5h7M8.5 16h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+						</svg>
+						<span id="plan-count" class="plan-btn__count" hidden>0</span>
 					</button>
-					<div id="account-signed-in" class="account__signed-in" hidden>
+
+					<div class="account" id="account-area">
 						<button
-							id="account-menu-btn"
-							class="account__btn account__btn--user"
+							id="account-signed-out-btn"
+							class="account__btn"
 							type="button"
-							aria-haspopup="true"
-							aria-expanded="false"
-							aria-label="Účet"
+							hidden
 						>
-							<svg
-								viewBox="0 0 24 24"
-								fill="none"
-								aria-hidden="true"
-								class="account__avatar-icon"
-							>
-								<circle
-									cx="12"
-									cy="8.5"
-									r="3.5"
-									stroke="currentColor"
-									stroke-width="1.6"
-								/>
-								<path
-									d="M4.5 20c1.2-3.8 4.3-6 7.5-6s6.3 2.2 7.5 6"
-									stroke="currentColor"
-									stroke-width="1.6"
-									stroke-linecap="round"
-								/>
-							</svg>
+							Prihlásiť sa
 						</button>
-						<div id="account-menu" class="account__menu" hidden>
-							<p id="account-username" class="account__menu-name"></p>
-							<button id="open-settings-btn" type="button">
-								Moje nastavenia
+						<div id="account-signed-in" class="account__signed-in" hidden>
+							<button
+								id="account-menu-btn"
+								class="account__btn account__btn--user"
+								type="button"
+								aria-haspopup="true"
+								aria-expanded="false"
+								aria-label="Účet"
+							>
+								<svg viewBox="0 0 24 24" fill="none" aria-hidden="true" class="account__avatar-icon">
+									<circle cx="12" cy="8.5" r="3.5" stroke="currentColor" stroke-width="1.6" />
+									<path
+										d="M4.5 20c1.2-3.8 4.3-6 7.5-6s6.3 2.2 7.5 6"
+										stroke="currentColor"
+										stroke-width="1.6"
+										stroke-linecap="round"
+									/>
+								</svg>
 							</button>
-							<button id="open-account-btn" type="button">Účet</button>
-							<button id="logout-btn" type="button">Odhlásiť sa</button>
+							<div id="account-menu" class="account__menu" hidden>
+								<p id="account-username" class="account__menu-name"></p>
+								<button id="open-settings-btn" type="button">
+									Moje nastavenia
+								</button>
+								<button id="open-account-btn" type="button">Účet</button>
+								<button id="logout-btn" type="button">Odhlásiť sa</button>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -90,13 +94,8 @@
 			<section id="view-gate" class="view gate" hidden>
 				<div class="gate__box">
 					<h2 class="gate__title">Recepty sú len pre prihlásených</h2>
-					<p class="gate__text">
-						Prihlás sa alebo si vytvor účet a získaj prístup ku všetkým
-						receptom.
-					</p>
-					<button type="button" id="gate-login-btn" class="btn btn--gold">
-						Prihlásiť sa / Registrovať
-					</button>
+					<p class="gate__text">Prihlás sa alebo si vytvor účet a získaj prístup ku všetkým receptom.</p>
+					<button type="button" id="gate-login-btn" class="btn btn--gold">Prihlásiť sa / Registrovať</button>
 				</div>
 			</section>
 
@@ -159,9 +158,7 @@
 
 				<label id="within-target-row" class="checkbox-row" hidden>
 					<input type="checkbox" id="within-target" />
-					<span
-						>Zobraziť len recepty, ktoré sa zmestia do môjho denného cieľa</span
-					>
+					<span>Zobraziť len recepty, ktoré sa zmestia do môjho denného cieľa</span>
 				</label>
 
 				<p id="result-count" class="result-count" aria-live="polite"></p>
@@ -452,15 +449,51 @@
 
 				<div class="danger-zone">
 					<p class="danger-zone__label">Nebezpečná zóna</p>
-					<p class="danger-zone__hint">
-						Zmaže tvoj účet a všetky uložené nastavenia natrvalo. Nedá sa vrátiť
-						späť.
-					</p>
-					<button type="button" id="account-delete-btn" class="btn btn--danger">
-						Zmazať účet
-					</button>
+					<p class="danger-zone__hint">Zmaže tvoj účet a všetky uložené nastavenia natrvalo. Nedá sa vrátiť späť.</p>
+					<button type="button" id="account-delete-btn" class="btn btn--danger">Zmazať účet</button>
 				</div>
 			</form>
+		</dialog>
+
+		<!-- PLAN DIALOG -->
+		<dialog id="plan-dialog" class="dialog dialog--wide">
+			<div class="dialog__form">
+				<h2 class="dialog__title">Môj plán</h2>
+
+				<p id="plan-empty" class="dialog__empty" hidden>
+					Zatiaľ nemáš žiadne recepty v pláne. Klikni na ikonu plánu na karte receptu, aby si ho pridal/a.
+				</p>
+
+				<ul id="plan-list" class="plan-list"></ul>
+
+				<div class="dialog__actions">
+					<button type="button" id="plan-close-btn" class="btn btn--ghost">Zavrieť</button>
+					<button type="button" id="plan-generate-btn" class="btn btn--gold">Vygenerovať nákupný zoznam</button>
+				</div>
+			</div>
+		</dialog>
+
+		<!-- SHOPPING LIST DIALOG -->
+		<dialog id="shopping-list-dialog" class="dialog dialog--wide">
+			<div class="dialog__form">
+				<h2 class="dialog__title">Nákupný zoznam</h2>
+
+				<p id="shopping-list-empty" class="dialog__empty" hidden>
+					V pláne nie sú žiadne ingrediencie na zosumarizovanie.
+				</p>
+
+				<div id="shopping-list-items"></div>
+
+				<div class="dialog__actions dialog__actions--wrap">
+					<button type="button" id="shopping-list-back-btn" class="btn btn--ghost">Späť na plán</button>
+					<button type="button" id="shopping-list-copy-btn" class="btn btn--ghost">Kopírovať text</button>
+					<button type="button" id="shopping-list-txt-btn" class="btn btn--ghost">Stiahnuť .txt</button>
+					<button type="button" id="shopping-list-img-btn" class="btn btn--gold">Stiahnuť obrázok</button>
+				</div>
+				<div class="dialog__actions">
+					<button type="button" id="shopping-list-close-btn" class="btn btn--ghost">Zavrieť</button>
+				</div>
+			</div>
 		</dialog>
 
 		<script src="script.js"></script>

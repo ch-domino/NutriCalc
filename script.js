@@ -44,6 +44,22 @@
 		viewDetail: document.getElementById('view-detail'),
 		viewGate: document.getElementById('view-gate'),
 		gateLoginBtn: document.getElementById('gate-login-btn'),
+		planBtn: document.getElementById('plan-btn'),
+		planCount: document.getElementById('plan-count'),
+		planDialog: document.getElementById('plan-dialog'),
+		planCloseBtn: document.getElementById('plan-close-btn'),
+		planList: document.getElementById('plan-list'),
+		planEmpty: document.getElementById('plan-empty'),
+		planGenerateBtn: document.getElementById('plan-generate-btn'),
+
+		shoppingListDialog: document.getElementById('shopping-list-dialog'),
+		shoppingListItems: document.getElementById('shopping-list-items'),
+		shoppingListEmpty: document.getElementById('shopping-list-empty'),
+		shoppingListCloseBtn: document.getElementById('shopping-list-close-btn'),
+		shoppingListBackBtn: document.getElementById('shopping-list-back-btn'),
+		shoppingListCopyBtn: document.getElementById('shopping-list-copy-btn'),
+		shoppingListTxtBtn: document.getElementById('shopping-list-txt-btn'),
+		shoppingListImgBtn: document.getElementById('shopping-list-img-btn'),
 		grid: document.getElementById('card-grid'),
 		chipRow: document.getElementById('chip-row'),
 		searchInput: document.getElementById('search-input'),
@@ -128,6 +144,12 @@
 		'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.5l2.6 5.4 5.9.7-4.3 4.1 1.1 5.9-5.3-2.9-5.3 2.9 1.1-5.9-4.3-4.1 5.9-.7Z"/></svg>';
 	const ICON_WARN =
 		'<svg viewBox="0 0 20 20" fill="none"><path d="M10 3.5 2.5 16h15L10 3.5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M10 8v3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="10" cy="13.6" r="0.6" fill="currentColor"/></svg>';
+	const ICON_PLAN_ADD =
+		'<svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="4.5" width="17" height="16" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M12 10.5v6M9 13.5h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+	const ICON_PLAN_CHECK =
+		'<svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="4.5" width="17" height="16" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M8.5 13l2.4 2.5L15.5 10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+	const ICON_WARN_REMOVE =
+		'<svg viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5 5 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
 
 	/* ---------------------------------------------------------
 	   Formatting helpers
@@ -241,6 +263,8 @@
 			withinTargetOnly = false;
 			el.withinTargetCheckbox.checked = false;
 		}
+
+		updatePlanBadge();
 	}
 
 	let authMode = 'login';
@@ -548,11 +572,16 @@
 		if (target) target.focus({ preventScroll: true });
 	}
 
-	[el.authDialog, el.forgotDialog, el.settingsDialog, el.accountDialog].forEach(
-		(dialog) => {
-			dialog.addEventListener('close', restoreHeaderFocus);
-		},
-	);
+	[
+		el.authDialog,
+		el.forgotDialog,
+		el.settingsDialog,
+		el.accountDialog,
+		el.planDialog,
+		el.shoppingListDialog,
+	].forEach((dialog) => {
+		dialog.addEventListener('close', restoreHeaderFocus);
+	});
 
 	/* ---------------------------------------------------------
 	   Favorites
@@ -591,6 +620,375 @@
 		} catch (err) {
 			console.error('Uloženie obľúbeného zlyhalo:', err);
 		}
+	}
+
+	/* ---------------------------------------------------------
+	   Meal plan (recipe -> how many times to cook it)
+	--------------------------------------------------------- */
+	function getPlan() {
+		return (session && session.settings.plan) || [];
+	}
+
+	function planEntry(id) {
+		return getPlan().find((p) => p.recipeId === id) || null;
+	}
+
+	function isPlanned(id) {
+		return !!planEntry(id);
+	}
+
+	function planTotalCount() {
+		return getPlan().length;
+	}
+
+	async function savePlan(next) {
+		session.settings.plan = next; // optimistic update
+		saveSession();
+		render();
+		renderPlanDialog();
+		updatePlanBadge();
+		if (!el.viewDetail.hidden) {
+			const match = window.location.hash.match(/^#\/recipe\/(\d+)/);
+			if (match) renderDetail(match[1]);
+		}
+		try {
+			const data = await apiFetch('/settings', {
+				method: 'PUT',
+				body: JSON.stringify({ plan: next }),
+			});
+			session.settings = data.settings;
+			saveSession();
+		} catch (err) {
+			console.error('Uloženie plánu zlyhalo:', err);
+		}
+	}
+
+	function togglePlan(id) {
+		if (!session) {
+			el.accountSignedOutBtn.click();
+			return;
+		}
+		const current = getPlan();
+		const next = current.some((p) => p.recipeId === id)
+			? current.filter((p) => p.recipeId !== id)
+			: [...current, { recipeId: id, multiplier: 1 }];
+		savePlan(next);
+	}
+
+	function setPlanMultiplier(id, multiplier) {
+		const clamped = Math.min(30, Math.max(1, Math.round(multiplier)));
+		const next = getPlan().map((p) =>
+			p.recipeId === id ? { ...p, multiplier: clamped } : p,
+		);
+		savePlan(next);
+	}
+
+	function removeFromPlan(id) {
+		const next = getPlan().filter((p) => p.recipeId !== id);
+		savePlan(next);
+	}
+
+	function updatePlanBadge() {
+		if (!session) {
+			el.planBtn.hidden = true;
+			return;
+		}
+		el.planBtn.hidden = false;
+		const count = planTotalCount();
+		el.planCount.hidden = count === 0;
+		el.planCount.textContent = String(count);
+	}
+
+	/* ---------------------------------------------------------
+	   Plan dialog
+	--------------------------------------------------------- */
+	function renderPlanDialog() {
+		const plan = getPlan();
+
+		if (plan.length === 0) {
+			el.planList.innerHTML = '';
+			el.planEmpty.hidden = false;
+			el.planGenerateBtn.disabled = true;
+			return;
+		}
+		el.planEmpty.hidden = true;
+		el.planGenerateBtn.disabled = false;
+
+		el.planList.innerHTML = plan
+			.map((p) => {
+				const recipe = recipes.find((r) => r.id === p.recipeId);
+				if (!recipe) return '';
+				return `
+					<li class="plan-item" data-plan-id="${p.recipeId}">
+						<span class="plan-item__name">${recipe.title}</span>
+						<div class="plan-item__controls">
+							<button type="button" class="plan-item__step" data-step="-1" aria-label="Menej">−</button>
+							<span class="plan-item__multiplier">${p.multiplier}×</span>
+							<button type="button" class="plan-item__step" data-step="1" aria-label="Viac">+</button>
+							<button type="button" class="plan-item__remove" aria-label="Odobrať z plánu">${ICON_WARN_REMOVE}</button>
+						</div>
+					</li>
+				`;
+			})
+			.join('');
+
+		el.planList.querySelectorAll('.plan-item').forEach((li) => {
+			const id = Number(li.dataset.planId);
+			li.querySelectorAll('.plan-item__step').forEach((btn) => {
+				btn.addEventListener('click', () => {
+					const entry = planEntry(id);
+					if (!entry) return;
+					setPlanMultiplier(id, entry.multiplier + Number(btn.dataset.step));
+				});
+			});
+			li.querySelector('.plan-item__remove').addEventListener('click', () =>
+				removeFromPlan(id),
+			);
+		});
+	}
+
+	el.planBtn.addEventListener('click', () => {
+		renderPlanDialog();
+		el.planDialog.showModal();
+	});
+	el.planCloseBtn.addEventListener('click', () => el.planDialog.close());
+
+	el.planGenerateBtn.addEventListener('click', () => {
+		el.planDialog.close();
+		renderShoppingList();
+		el.shoppingListDialog.showModal();
+	});
+
+	/* ---------------------------------------------------------
+	   Shopping list: aggregate ingredients across the plan
+	--------------------------------------------------------- */
+	const UNIT_BASE = {
+		g: { base: 'g', factor: 1 },
+		kg: { base: 'g', factor: 1000 },
+		ml: { base: 'ml', factor: 1 },
+		l: { base: 'ml', factor: 1000 },
+	};
+
+	function buildShoppingList() {
+		const grouped = new Map();
+		const noAmount = new Map();
+
+		getPlan().forEach((p) => {
+			const recipe = recipes.find((r) => r.id === p.recipeId);
+			if (!recipe) return;
+			const multiplier = p.multiplier || 1;
+
+			recipe.ingredients.forEach((ing) => {
+				if (ing.amount === null || ing.amount === undefined) {
+					const key = ing.name.toLowerCase().trim();
+					if (!noAmount.has(key))
+						noAmount.set(key, { name: titleCase(ing.name) });
+					return;
+				}
+
+				const unitInfo = ing.unit && UNIT_BASE[ing.unit];
+				const baseUnit = unitInfo ? unitInfo.base : ing.unit || 'ks';
+				const factor = unitInfo ? unitInfo.factor : 1;
+				const key = `${ing.name.toLowerCase().trim()}|${baseUnit}`;
+				const amountInBase = ing.amount * factor * multiplier;
+
+				if (!grouped.has(key)) {
+					grouped.set(key, {
+						name: titleCase(ing.name),
+						unit: baseUnit,
+						amount: 0,
+					});
+				}
+				grouped.get(key).amount += amountInBase;
+			});
+		});
+
+		const items = [...grouped.values()].map((item) => {
+			let { amount, unit } = item;
+			if (unit === 'g' && amount >= 1000) {
+				amount /= 1000;
+				unit = 'kg';
+			} else if (unit === 'ml' && amount >= 1000) {
+				amount /= 1000;
+				unit = 'l';
+			}
+			amount = Math.round(amount * 100) / 100;
+			return { name: item.name, amount, unit };
+		});
+
+		items.sort((a, b) => a.name.localeCompare(b.name, 'sk'));
+		const extras = [...noAmount.values()].sort((a, b) =>
+			a.name.localeCompare(b.name, 'sk'),
+		);
+
+		return { items, extras };
+	}
+
+	function formatShoppingAmount(item) {
+		const amt = Number.isInteger(item.amount)
+			? item.amount
+			: item.amount.toLocaleString('sk-SK', { maximumFractionDigits: 2 });
+		const unitLabel =
+			item.unit === 'ks' ? ' ks' : item.unit ? ` ${item.unit}` : '';
+		return `${amt}${unitLabel}`;
+	}
+
+	function shoppingListToText(list) {
+		const lines = ['NÁKUPNÝ ZOZNAM', ''];
+		list.items.forEach((i) =>
+			lines.push(`☐ ${i.name} — ${formatShoppingAmount(i)}`),
+		);
+		if (list.extras.length) {
+			lines.push('', 'Podľa chuti:');
+			list.extras.forEach((e) => lines.push(`☐ ${e.name}`));
+		}
+		return lines.join('\n');
+	}
+
+	function renderShoppingList() {
+		const list = buildShoppingList();
+		currentShoppingList = list;
+
+		if (list.items.length === 0 && list.extras.length === 0) {
+			el.shoppingListItems.innerHTML = '';
+			el.shoppingListEmpty.hidden = false;
+			return;
+		}
+		el.shoppingListEmpty.hidden = true;
+
+		const itemRows = list.items
+			.map(
+				(i) =>
+					`<li><span>${i.name}</span><span class="shopping-list__amount">${formatShoppingAmount(i)}</span></li>`,
+			)
+			.join('');
+		const extraRows = list.extras.length
+			? `<p class="shopping-list__subhead">Podľa chuti</p><ul class="shopping-list__items">${list.extras
+					.map((e) => `<li><span>${e.name}</span></li>`)
+					.join('')}</ul>`
+			: '';
+
+		el.shoppingListItems.innerHTML = `<ul class="shopping-list__items">${itemRows}</ul>${extraRows}`;
+	}
+
+	let currentShoppingList = { items: [], extras: [] };
+
+	el.shoppingListCloseBtn.addEventListener('click', () =>
+		el.shoppingListDialog.close(),
+	);
+	el.shoppingListBackBtn.addEventListener('click', () => {
+		el.shoppingListDialog.close();
+		renderPlanDialog();
+		el.planDialog.showModal();
+	});
+
+	el.shoppingListCopyBtn.addEventListener('click', async () => {
+		const text = shoppingListToText(currentShoppingList);
+		try {
+			await navigator.clipboard.writeText(text);
+			el.shoppingListCopyBtn.textContent = 'Skopírované ✓';
+			setTimeout(
+				() => (el.shoppingListCopyBtn.textContent = 'Kopírovať text'),
+				1500,
+			);
+		} catch {
+			window.prompt('Skopíruj text manuálne:', text);
+		}
+	});
+
+	el.shoppingListTxtBtn.addEventListener('click', () => {
+		const text = shoppingListToText(currentShoppingList);
+		const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = 'nakupny-zoznam.txt';
+		a.click();
+		URL.revokeObjectURL(url);
+	});
+
+	el.shoppingListImgBtn.addEventListener('click', async () => {
+		const dataUrl = await shoppingListToImage(currentShoppingList);
+		const a = document.createElement('a');
+		a.href = dataUrl;
+		a.download = 'nakupny-zoznam.png';
+		a.click();
+	});
+
+	async function shoppingListToImage(list) {
+		if (document.fonts && document.fonts.ready) {
+			try {
+				await document.fonts.ready;
+			} catch {
+				/* ignore — canvas will fall back to default fonts */
+			}
+		}
+
+		const width = 640;
+		const padding = 40;
+		const lineHeight = 30;
+		const titleHeight = 64;
+		const subheadGap = 44;
+
+		let lineCount = list.items.length;
+		if (list.extras.length) lineCount += list.extras.length + 1;
+		const height =
+			titleHeight +
+			Math.max(lineCount, 1) * lineHeight +
+			padding * 2 +
+			(list.extras.length ? subheadGap - lineHeight : 0);
+
+		const canvas = document.createElement('canvas');
+		const scale = 2; // sharper output on retina screens
+		canvas.width = width * scale;
+		canvas.height = height * scale;
+		const ctx = canvas.getContext('2d');
+		ctx.scale(scale, scale);
+
+		ctx.fillStyle = '#14110d';
+		ctx.fillRect(0, 0, width, height);
+
+		ctx.fillStyle = '#e0b93a';
+		ctx.font = '700 26px Fraunces, Georgia, serif';
+		ctx.fillText('Nákupný zoznam', padding, padding + 24);
+		ctx.strokeStyle = '#3a3020';
+		ctx.lineWidth = 1;
+		ctx.beginPath();
+		ctx.moveTo(padding, padding + 40);
+		ctx.lineTo(width - padding, padding + 40);
+		ctx.stroke();
+
+		let y = titleHeight + padding;
+		ctx.font = '16px "IBM Plex Mono", ui-monospace, monospace';
+		ctx.fillStyle = '#f3ede0';
+
+		list.items.forEach((i) => {
+			ctx.fillStyle = '#7f7261';
+			ctx.fillText('☐', padding, y);
+			ctx.fillStyle = '#f3ede0';
+			ctx.fillText(i.name, padding + 22, y);
+			ctx.fillStyle = '#c9a227';
+			const amountText = formatShoppingAmount(i);
+			const amountWidth = ctx.measureText(amountText).width;
+			ctx.fillText(amountText, width - padding - amountWidth, y);
+			y += lineHeight;
+		});
+
+		if (list.extras.length) {
+			y += subheadGap - lineHeight;
+			ctx.fillStyle = '#b6a494';
+			ctx.fillText('Podľa chuti', padding, y);
+			y += lineHeight;
+			list.extras.forEach((e) => {
+				ctx.fillStyle = '#7f7261';
+				ctx.fillText('☐', padding, y);
+				ctx.fillStyle = '#f3ede0';
+				ctx.fillText(e.name, padding + 22, y);
+				y += lineHeight;
+			});
+		}
+
+		return canvas.toDataURL('image/png');
 	}
 
 	/* ---------------------------------------------------------
@@ -787,14 +1185,20 @@
 		const restriction = matchedRestriction(r);
 		const pct = targetPercent(n.kcal);
 		const fav = isFavorite(r.id);
+		const planned = isPlanned(r.id);
 
 		return `
 			<div class="recipe-card" data-id="${r.id}" tabindex="0" role="button" aria-label="Zobraziť recept: ${r.title}">
 				<div class="recipe-card__top">
 					<h2 class="recipe-card__title">${r.title}</h2>
-					<button class="fav-btn" data-fav-id="${r.id}" aria-pressed="${fav}" aria-label="${fav ? 'Odobrať z obľúbených' : 'Pridať do obľúbených'}">
-						${fav ? ICON_STAR_FILLED : ICON_STAR_OUTLINE}
-					</button>
+					<div class="recipe-card__actions">
+						<button class="plan-toggle-btn${planned ? ' plan-toggle-btn--active' : ''}" data-plan-id="${r.id}" aria-pressed="${planned}" aria-label="${planned ? 'Odobrať z plánu' : 'Pridať do plánu'}">
+							${planned ? ICON_PLAN_CHECK : ICON_PLAN_ADD}
+						</button>
+						<button class="fav-btn" data-fav-id="${r.id}" aria-pressed="${fav}" aria-label="${fav ? 'Odobrať z obľúbených' : 'Pridať do obľúbených'}">
+							${fav ? ICON_STAR_FILLED : ICON_STAR_OUTLINE}
+						</button>
+					</div>
 				</div>
 				<div class="recipe-card__tags">${tags}</div>
 				${restriction ? `<div class="restriction-flag">${ICON_WARN} obsahuje: ${restriction}</div>` : ''}
@@ -832,7 +1236,11 @@
 				window.location.hash = `#/recipe/${card.dataset.id}`;
 			};
 			card.addEventListener('click', (e) => {
-				if (e.target.closest('.fav-btn')) return;
+				if (
+					e.target.closest('.fav-btn') ||
+					e.target.closest('.plan-toggle-btn')
+				)
+					return;
 				open();
 			});
 			card.addEventListener('keydown', (e) => {
@@ -849,6 +1257,13 @@
 				toggleFavorite(Number(btn.dataset.favId));
 			});
 		});
+
+		el.grid.querySelectorAll('.plan-toggle-btn').forEach((btn) => {
+			btn.addEventListener('click', (e) => {
+				e.stopPropagation();
+				togglePlan(Number(btn.dataset.planId));
+			});
+		});
 	}
 
 	/* ---------------------------------------------------------
@@ -862,6 +1277,7 @@
 		const restriction = matchedRestriction(r);
 		const pct = targetPercent(n.kcal);
 		const fav = isFavorite(r.id);
+		const planned = isPlanned(r.id);
 
 		const ingredientRows = r.ingredients
 			.map(
@@ -890,9 +1306,14 @@
 			<div class="detail-header">
 				<div class="detail-header__top">
 					<h1 class="detail-header__title">${r.title}</h1>
-					<button class="fav-btn fav-btn--lg" data-fav-id="${r.id}" aria-pressed="${fav}" aria-label="${fav ? 'Odobrať z obľúbených' : 'Pridať do obľúbených'}">
-						${fav ? ICON_STAR_FILLED : ICON_STAR_OUTLINE}
-					</button>
+					<div class="recipe-card__actions recipe-card__actions--lg">
+						<button class="plan-toggle-btn plan-toggle-btn--lg${planned ? ' plan-toggle-btn--active' : ''}" data-plan-id="${r.id}" aria-pressed="${planned}" aria-label="${planned ? 'Odobrať z plánu' : 'Pridať do plánu'}">
+							${planned ? ICON_PLAN_CHECK : ICON_PLAN_ADD}
+						</button>
+						<button class="fav-btn fav-btn--lg" data-fav-id="${r.id}" aria-pressed="${fav}" aria-label="${fav ? 'Odobrať z obľúbených' : 'Pridať do obľúbených'}">
+							${fav ? ICON_STAR_FILLED : ICON_STAR_OUTLINE}
+						</button>
+					</div>
 				</div>
 				<div class="detail-header__tags">${tags}</div>
 				${restriction ? `<div class="restriction-flag">${ICON_WARN} obsahuje: ${restriction}</div>` : ''}
@@ -950,6 +1371,13 @@
 		if (favBtn) {
 			favBtn.addEventListener('click', () =>
 				toggleFavorite(Number(favBtn.dataset.favId)),
+			);
+		}
+
+		const planBtn = el.detailContent.querySelector('.plan-toggle-btn');
+		if (planBtn) {
+			planBtn.addEventListener('click', () =>
+				togglePlan(Number(planBtn.dataset.planId)),
 			);
 		}
 	}
