@@ -41,6 +41,8 @@
 	const el = {
 		viewList: document.getElementById('view-list'),
 		viewDetail: document.getElementById('view-detail'),
+		viewGate: document.getElementById('view-gate'),
+		gateLoginBtn: document.getElementById('gate-login-btn'),
 		grid: document.getElementById('card-grid'),
 		chipRow: document.getElementById('chip-row'),
 		searchInput: document.getElementById('search-input'),
@@ -107,6 +109,7 @@
 		accountNewUsername: document.getElementById('account-new-username'),
 		accountNewPassword: document.getElementById('account-new-password'),
 		accountCancelBtn: document.getElementById('account-cancel-btn'),
+		accountDeleteBtn: document.getElementById('account-delete-btn'),
 	};
 
 	/* ---------------------------------------------------------
@@ -267,9 +270,8 @@
 			};
 			saveSession();
 			renderAccountUI();
-			buildChips();
-			render();
 			el.authDialog.close();
+			await loadRecipes();
 		} catch (err) {
 			el.authError.textContent = err.message;
 			el.authError.hidden = false;
@@ -291,11 +293,12 @@
 	el.logoutBtn.addEventListener('click', () => {
 		session = null;
 		activeChips.delete(FAVORITES_CHIP);
+		recipes = [];
 		saveSession();
 		renderAccountUI();
-		buildChips();
-		render();
 		el.accountMenu.hidden = true;
+		window.location.hash = '#/';
+		updateViewVisibility();
 	});
 
 	/* ---------------------------------------------------------
@@ -418,9 +421,8 @@
 			};
 			saveSession();
 			renderAccountUI();
-			buildChips();
-			render();
 			el.forgotDialog.close();
+			await loadRecipes();
 		} catch (err) {
 			el.forgotError.textContent = err.message;
 			el.forgotError.hidden = false;
@@ -428,7 +430,7 @@
 	});
 
 	/* ---------------------------------------------------------
-	   Account (change username / password)
+	   Account (change username / password / delete)
 	--------------------------------------------------------- */
 	el.openAccountBtn.addEventListener('click', () => {
 		el.accountMenu.hidden = true;
@@ -474,6 +476,62 @@
 			el.accountError.hidden = false;
 		}
 	});
+
+	if (el.accountDeleteBtn) {
+		el.accountDeleteBtn.addEventListener('click', async () => {
+			el.accountError.hidden = true;
+			el.accountSuccess.hidden = true;
+
+			const currentPassword = el.accountCurrentPassword.value;
+			if (!currentPassword) {
+				el.accountError.textContent = 'Zadaj svoje heslo pre potvrdenie.';
+				el.accountError.hidden = false;
+				el.accountCurrentPassword.focus();
+				return;
+			}
+
+			const confirmed = window.confirm(
+				'Naozaj chceš natrvalo zmazať svoj účet? Túto akciu nie je možné vrátiť späť.',
+			);
+			if (!confirmed) return;
+
+			try {
+				await apiFetch('/delete-account', {
+					method: 'DELETE',
+					body: JSON.stringify({ currentPassword }),
+				});
+				session = null;
+				activeChips.delete(FAVORITES_CHIP);
+				recipes = [];
+				saveSession();
+				renderAccountUI();
+				el.accountDialog.close();
+				window.location.hash = '#/';
+				updateViewVisibility();
+			} catch (err) {
+				el.accountError.textContent = err.message;
+				el.accountError.hidden = false;
+			}
+		});
+	}
+
+	/* ---------------------------------------------------------
+	   iOS Safari sometimes leaves the header stuck / un-tappable
+	   after a dialog closes, if focus tries to return to a button
+	   that was inside a menu we'd already hidden. Moving focus to
+	   an always-visible header control on every dialog close
+	   avoids that stuck state.
+	--------------------------------------------------------- */
+	function restoreHeaderFocus() {
+		const target = session ? el.accountMenuBtn : el.accountSignedOutBtn;
+		if (target) target.focus({ preventScroll: true });
+	}
+
+	[el.authDialog, el.forgotDialog, el.settingsDialog, el.accountDialog].forEach(
+		(dialog) => {
+			dialog.addEventListener('close', restoreHeaderFocus);
+		},
+	);
 
 	/* ---------------------------------------------------------
 	   Favorites
@@ -545,14 +603,12 @@
 	   Data loading
 	--------------------------------------------------------- */
 	async function loadRecipes() {
+		if (!session) {
+			updateViewVisibility();
+			return;
+		}
 		try {
-			const res = await fetch(`${API_BASE}/recipes`);
-			const data = await res.json().catch(() => null);
-			if (!res.ok) {
-				throw new Error(
-					(data && data.error) || `Server vrátil chybu ${res.status}.`,
-				);
-			}
+			const data = await apiFetch('/recipes');
 			if (!Array.isArray(data)) {
 				throw new Error('Server vrátil neočakávanú odpoveď.');
 			}
@@ -560,11 +616,12 @@
 		} catch (err) {
 			el.grid.innerHTML = `<p style="color:var(--text-faint);grid-column:1/-1;">Recepty sa nepodarilo načítať: ${err.message}</p>`;
 			console.error(err);
+			updateViewVisibility();
 			return;
 		}
 		buildChips();
 		render();
-		route();
+		updateViewVisibility();
 	}
 
 	function buildChips() {
@@ -879,11 +936,30 @@
 		}
 	}
 
+	/* ---------------------------------------------------------
+	   Gate: recipes are only shown to a logged-in session
+	--------------------------------------------------------- */
+	function updateViewVisibility() {
+		if (!session) {
+			el.viewGate.hidden = false;
+			el.viewList.hidden = true;
+			el.viewDetail.hidden = true;
+			document.title = 'Nutrikalkulačka od Hany';
+			return;
+		}
+		el.viewGate.hidden = true;
+		route();
+	}
+
 	el.backBtn.addEventListener('click', () => {
 		window.location.hash = '#/';
 	});
 
-	window.addEventListener('hashchange', route);
+	el.gateLoginBtn.addEventListener('click', () => {
+		el.accountSignedOutBtn.click();
+	});
+
+	window.addEventListener('hashchange', updateViewVisibility);
 
 	/* ---------------------------------------------------------
 	   Toolbar events
@@ -927,7 +1003,11 @@
 			}
 		}
 
-		await loadRecipes();
+		if (session) {
+			await loadRecipes();
+		} else {
+			updateViewVisibility();
+		}
 	}
 
 	init();
