@@ -206,12 +206,16 @@
 	   Auth UI
 	--------------------------------------------------------- */
 	function renderAccountUI() {
+		// The signed-out header button used to duplicate the gate's own
+		// "Prihlásiť sa" button — since the gate is the only thing visible
+		// while logged out anyway, the header button is kept out of view
+		// and only triggered programmatically (see gate-login-btn below).
+		el.accountSignedOutBtn.hidden = true;
+
 		if (session) {
-			el.accountSignedOutBtn.hidden = true;
 			el.accountSignedIn.hidden = false;
 			el.accountUsername.textContent = session.username;
 		} else {
-			el.accountSignedOutBtn.hidden = false;
 			el.accountSignedIn.hidden = true;
 			el.accountMenu.hidden = true;
 		}
@@ -540,7 +544,7 @@
 	   avoids that stuck state.
 	--------------------------------------------------------- */
 	function restoreHeaderFocus() {
-		const target = session ? el.accountMenuBtn : el.accountSignedOutBtn;
+		const target = session ? el.accountMenuBtn : el.gateLoginBtn;
 		if (target) target.focus({ preventScroll: true });
 	}
 
