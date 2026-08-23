@@ -3,11 +3,11 @@
 
 	/* ---------------------------------------------------------
 	   Config
-	   Replace with your deployed Netlify Functions site URL,
-	   e.g. "https://nutrikalkulacka-api.netlify.app/.netlify/functions"
+	   Replace with your deployed Cloudflare Worker URL,
+	   e.g. "https://nutrikalkulacka-api.your-subdomain.workers.dev"
+	   (or your custom domain if you attach one — no /api suffix)
 	--------------------------------------------------------- */
-	const API_BASE =
-		'https://cosmic-mooncake-74eea9.netlify.app/.netlify/functions';
+	const API_BASE = 'https://YOUR-WORKER-NAME.YOUR-SUBDOMAIN.workers.dev';
 
 	/* ---------------------------------------------------------
 	   State
