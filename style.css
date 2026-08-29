@@ -140,45 +140,6 @@ a {
 	gap: 10px;
 }
 
-.plan-btn {
-	position: relative;
-	width: 36px;
-	height: 36px;
-	padding: 0;
-	border-radius: 50%;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	color: var(--text-muted);
-}
-
-.plan-btn:hover {
-	color: var(--gold-bright);
-	border-color: var(--gold-dim);
-}
-
-.plan-btn__icon {
-	width: 18px;
-	height: 18px;
-	display: block;
-}
-
-.plan-btn__count {
-	position: absolute;
-	top: -4px;
-	right: -4px;
-	min-width: 16px;
-	height: 16px;
-	padding: 0 4px;
-	border-radius: 999px;
-	background: var(--gold);
-	color: #14110d;
-	font-size: 0.65rem;
-	font-weight: 700;
-	line-height: 16px;
-	text-align: center;
-}
-
 .account__btn {
 	appearance: none;
 	background: transparent;
@@ -222,6 +183,45 @@ a {
 	width: 18px;
 	height: 18px;
 	display: block;
+}
+
+.plan-btn {
+	position: relative;
+	width: 36px;
+	height: 36px;
+	padding: 0;
+	border-radius: 50%;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--text-muted);
+}
+
+.plan-btn:hover {
+	color: var(--gold-bright);
+	border-color: var(--gold-dim);
+}
+
+.plan-btn__icon {
+	width: 18px;
+	height: 18px;
+	display: block;
+}
+
+.plan-btn__count {
+	position: absolute;
+	top: -4px;
+	right: -4px;
+	min-width: 16px;
+	height: 16px;
+	padding: 0 4px;
+	border-radius: 999px;
+	background: var(--gold);
+	color: #14110d;
+	font-size: 0.65rem;
+	font-weight: 700;
+	line-height: 16px;
+	text-align: center;
 }
 
 .account__signed-in {
