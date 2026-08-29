@@ -4,7 +4,7 @@
 	/* ---------------------------------------------------------
 	   Config
 	   Replace with your deployed Cloudflare Worker URL,
-	   e.g. "https://nutrikalkulacka-api.your-subdomain.workers.dev"
+	   e.g. "https://nutricalc-api.your-subdomain.workers.dev"
 	   (or your custom domain if you attach one — no /api suffix)
 	--------------------------------------------------------- */
 	const API_BASE = 'https://nutricalcdata.chrobakdomino.workers.dev';
@@ -1365,7 +1365,7 @@
 			return;
 		}
 		el.detailContent.innerHTML = detailTemplate(recipe);
-		document.title = `${recipe.title} — Nutrikalkulačka od Hany`;
+		document.title = `${recipe.title} — NutriCalc`;
 
 		const favBtn = el.detailContent.querySelector('.fav-btn');
 		if (favBtn) {
@@ -1400,7 +1400,7 @@
 		} else {
 			el.viewList.hidden = false;
 			el.viewDetail.hidden = true;
-			document.title = 'Nutrikalkulačka od Hany';
+			document.title = 'NutriCalc';
 		}
 	}
 
@@ -1412,7 +1412,7 @@
 			el.viewGate.hidden = false;
 			el.viewList.hidden = true;
 			el.viewDetail.hidden = true;
-			document.title = 'Nutrikalkulačka od Hany';
+			document.title = 'NutriCalc';
 			return;
 		}
 		el.viewGate.hidden = true;
