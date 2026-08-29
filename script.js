@@ -7,7 +7,7 @@
 	   e.g. "https://nutricalc-api.your-subdomain.workers.dev"
 	   (or your custom domain if you attach one — no /api suffix)
 	--------------------------------------------------------- */
-	const API_BASE = 'https://nutricalcdata.chrobakdomino.workers.dev';
+	const API_BASE = 'https://YOUR-WORKER-NAME.YOUR-SUBDOMAIN.workers.dev';
 
 	/* ---------------------------------------------------------
 	   State
@@ -767,6 +767,16 @@
 		kg: { base: 'g', factor: 1000 },
 		ml: { base: 'ml', factor: 1 },
 		l: { base: 'ml', factor: 1000 },
+		// spoons and cups are volume measures by definition — the
+		// conversion factor is fixed and doesn't depend on what's being
+		// measured, unlike weight, so these safely fold into the ml/l
+		// bucket above. (šálka/hrnček assumed at 250 ml — the common
+		// metric convention; adjust here if your recipes meant the
+		// slightly smaller 240 ml US cup.)
+		ČL: { base: 'ml', factor: 5 },
+		PL: { base: 'ml', factor: 15 },
+		šálka: { base: 'ml', factor: 250 },
+		hrnček: { base: 'ml', factor: 250 },
 	};
 
 	function buildShoppingList() {
