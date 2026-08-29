@@ -41,6 +41,13 @@
 	box-sizing: border-box;
 }
 
+/* The hidden attribute must always win over any component's own display
+   value — otherwise a class that sets display explicitly (flex, inline-flex,
+   grid...) silently cancels [hidden] and JS toggling stops working. */
+[hidden] {
+	display: none !important;
+}
+
 html {
 	scroll-behavior: smooth;
 }
